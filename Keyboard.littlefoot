@@ -1,0 +1,138 @@
+//Simple one-octave keyboard + octave switches, by littlefoot@transistor.no
+
+/*
+<metadata description="One octave keyboard" target="All" tags="" >
+
+</metadata>
+*/
+
+// Not many variables needed
+int octave;
+int octaveup;
+int octavedown;
+
+void repaint()
+{
+    //at some point, provide some visual feedback here  
+}
+
+void initialise()
+{
+    octave = 5;
+    octaveup = 14;
+    octavedown = 13;
+    
+    //The keyboard is static, so draw it here
+    
+    fillRect (0xff001016, 0, 0, 15, 15); //black-ish background, but got to show something
+    fillRect (0xffffffff, 0, 12, 3, 3); //C
+    fillRect (0xffffffff, 4, 12, 3, 3); //D
+    fillRect (0xffffffff, 8, 12, 3, 3); //E
+    fillRect (0xffffffff, 12, 12, 3, 3); //F
+    fillRect (0xff0548c3, 2, 9, 3, 3); //C#
+    fillRect (0xff0548c3, 6, 9, 3, 3); //D#
+    fillRect (0xffffffff, 0, 5, 3, 3); //G
+    fillRect (0xffffffff, 4, 5, 3, 3); //A
+    fillRect (0xffffffff, 8, 5, 3, 3); //H
+    fillRect (0xffffffff, 12, 5, 3, 3); //C
+    fillRect (0xff0548c3, 2, 2, 3, 3); //G#
+    fillRect (0xff0548c3, 6, 2, 3, 3); //A#
+    fillRect (0xff0548c3, 13, 9, 2, 3); //F#
+    
+    
+    fillRect (0xffcf0781, 0, 0, 2, 2); //Octave down
+    fillRect (0xffcf0781, 13, 0, 2, 2); //Octave up
+        
+    //two (smaller) squares are transpose, five are blacked out (and not responding)
+}
+
+void touchStart(int index, float x, float y, float pressure, float pressurerate)
+{
+    int pad, note, velocity;
+    
+    //find out which pad has been pressed
+    pad = getpad(x,y);
+    
+        
+    if(pad>=octavedown)
+    {
+        if((pad==octavedown) && (octave>0))
+        {octave--;}
+        if((pad==octaveup) && (octave<6))
+        {octave++;}
+    }
+    else
+    {
+        if (pad != -1)
+        {
+    
+            //send midi on
+    
+            note =(pad+(octave*12));
+            sendNoteOn(0,note,int ((pressure * 127)+10)); //must increase sensitivity, othwerwise it's unplayable
+        }
+    }
+}
+
+void touchEnd(int index, float x, float y, float pressure, float pressurerate)
+{
+    int pad, note;
+    
+    //find out which pad has been released
+    pad = getpad(x,y);
+       
+    if (pad != -1)
+    {
+        //send midi off
+        note =(pad+(octave*12));
+        sendNoteOff(0,note,127);
+    }
+}
+
+int getpad(float x, float y)
+{
+    //find which pad has been pressed or released
+    //return 0 - 14 (13 notes + octave switches)
+
+    int xdot, ydot; //not really necessary, but makes it easier to map the keys
+    
+    xdot = int (x * 7);
+    ydot = int (y * 7);
+    
+    if (ydot < 2)
+    {
+        if (xdot < 2) return (octavedown);
+        if (xdot > 12) return (octaveup);
+    }
+ 
+    if (ydot > 1 && ydot < 5)
+    {
+        if (xdot > 1 && xdot < 5) return (8); //G#
+        if (xdot > 5 && xdot < 9) return (10); //A#
+    }
+    
+    if (ydot > 4 && ydot < 8)
+    {
+        if (xdot >= 0 && xdot < 3) return (7); //G
+        if (xdot > 3 && xdot < 7) return (9); //A
+        if (xdot > 7 && xdot < 11) return (11); //H
+        if (xdot > 11) return (12) ; //C+
+    }
+    
+    if (ydot > 8 && ydot < 12)
+    {
+        if (xdot > 1 && xdot < 5) return (1); //C#
+        if (xdot > 5 && xdot < 9) return (3); //D#
+        if (xdot > 11) return (6); //F# (invisible column included to improve playability)
+    }
+    
+    if (ydot > 11)
+    {
+        if (xdot >= 0 && xdot < 3) return (0); //C
+        if (xdot > 3 && xdot < 7) return (2); //D
+        if (xdot > 7 && xdot < 11) return (4); //E
+        if (xdot > 11) return (5); //F
+    }
+        
+    return (-1); //non-key areas
+}
