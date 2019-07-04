@@ -1,4 +1,6 @@
 //Simple one-octave keyboard + octave switches, by littlefoot@transistor.no
+//Current version: 1.1, 20190704
+
 
 /*
 <metadata description="One octave keyboard" target="All" tags="" >
@@ -36,6 +38,7 @@ void initialise()
     fillRect (0xffffffff, 8, 5, 3, 3); //H
     fillRect (0xffffffff, 12, 5, 3, 3); //C
     fillRect (0xff0548c3, 2, 2, 3, 3); //G#
+    // fillRect (0xff0548c3, 0, 2, 1, 3); //F#, upper part. This can easily be added, but the proximity to the octave switch is discouraging.
     fillRect (0xff0548c3, 6, 2, 3, 3); //A#
     fillRect (0xff0548c3, 13, 9, 2, 3); //F#
     
@@ -69,7 +72,7 @@ void touchStart(int index, float x, float y, float pressure, float pressurerate)
             //send midi on
     
             note =(pad+(octave*12));
-            sendNoteOn(0,note,int ((pressure * 127)+10)); //must increase sensitivity, othwerwise it's unplayable
+            sendNoteOn(0,note, 20 + (int (pressure * 127))); //must increase sensitivity, othwerwise it's unplayable
         }
     }
 }
