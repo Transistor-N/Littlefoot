@@ -1,0 +1,23 @@
+Current version: 1.1 - 20190704
+
+Todo:
+
+- Enhance velocity scaling
+- Improve note off detection
+- Visual feedback
+- Add a slide strip
+- Add options for the Dashboard:
+	* Octave
+	* Velocity scaling
+	* Slide strip functionality: pitch/mod/cc
+
+
+
+Changelog:
+
+1.0 to 1.1:
+
+- The possibility for adding a slice of F# on the top row has been put in. It is very close to the octave pad, so it is considered a no-go
+- The velocity calculation has been improved (1.0 was plain wrong). Currently it just adds a base value to the velocity, in further revisions one might implement a proper scaling.
+
+1.0: Initial release
