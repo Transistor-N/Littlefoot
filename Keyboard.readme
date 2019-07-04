@@ -1,19 +1,22 @@
-Current version: 1.1 - 20190704
+Current version: 1.2 - 20190704
 
 Todo:
 
 - Enhance velocity scaling
 - Improve note off detection
-- Visual feedback
 - Add a slide strip
 - Add options for the Dashboard:
-	* Octave
+	* Initial octave
 	* Velocity scaling type (log/lin?), or at least the base/starting value
 	* Slide strip functionality: pitch/mod/cc
 
 
 
 Changelog:
+
+1.1 to 1.2
+
+- Visual feedback added, position and velocity
 
 1.0 to 1.1:
 
