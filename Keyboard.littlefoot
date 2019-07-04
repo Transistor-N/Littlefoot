@@ -1,5 +1,5 @@
 //Simple one-octave keyboard + octave switches, by littlefoot@transistor.no
-//Current version: 1.1, 20190704
+//Current version: 1.2, 20190704
 
 
 /*
@@ -15,18 +15,12 @@ int octavedown;
 
 void repaint()
 {
-    //at some point, provide some visual feedback here  
-}
-
-void initialise()
-{
-    octave = 5;
-    octaveup = 14;
-    octavedown = 13;
-    
-    //The keyboard is static, so draw it here
+    //Drawing of keyboard moved here due to the feedback
+    //two (smaller) squares are transpose, five are blacked out (and not responding)
     
     fillRect (0xff001016, 0, 0, 15, 15); //black-ish background, but got to show something
+        
+    
     fillRect (0xffffffff, 0, 12, 3, 3); //C
     fillRect (0xffffffff, 4, 12, 3, 3); //D
     fillRect (0xffffffff, 8, 12, 3, 3); //E
@@ -43,15 +37,38 @@ void initialise()
     fillRect (0xff0548c3, 13, 9, 2, 3); //F#
     
     
+    //The octave buttons
+    
     fillRect (0xffcf0781, 0, 0, 2, 2); //Octave down
     fillRect (0xffcf0781, 13, 0, 2, 2); //Octave up
-        
-    //two (smaller) squares are transpose, five are blacked out (and not responding)
+    
+    
+    
+    //This draws the feedback
+    
+    drawPressureMap();
+    fadePressureMap();
+}
+
+void initialise()
+{
+    //Initialise the global variable(s)
+    
+    octave = 5;
+    
+    
+    //Pad numbers for the octave buttons, not needed, but helps avoid mistakes
+    
+    octaveup = 14;
+    octavedown = 13;
 }
 
 void touchStart(int index, float x, float y, float pressure, float pressurerate)
 {
     int pad, note, velocity;
+    
+    //give some feedback
+    addPressurePoint(0xff21da03,x,y,pressure*75.0);
     
     //find out which pad has been pressed
     pad = getpad(x,y);
