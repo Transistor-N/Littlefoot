@@ -8,7 +8,7 @@ Todo:
 - Add a slide strip
 - Add options for the Dashboard:
 	* Octave
-	* Velocity scaling
+	* Velocity scaling type (log/lin?), or at least the base/starting value
 	* Slide strip functionality: pitch/mod/cc
 
 
