@@ -74,8 +74,6 @@ void initialise()
 {
     //Initialise the global variable(s)
     
-    octave = 5;
-    
     if(slidermode != 0) slidervalue = 0;
     else slidervalue = 64; // = zero pitchbend   
     
