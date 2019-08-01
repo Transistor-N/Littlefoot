@@ -1,18 +1,32 @@
-//Simple one-octave keyboard + octave switches, by littlefoot@transistor.no
-//Current version: 1.3, 20190704
+//Simple one-octave keyboard + octave switches + a slider, by littlefoot@transistor.no
+//Current version: 1.5, 20190704
+//Note: the slider's value is not relative to the initial position, this is by choice.
+//Instead it is relative to the actual position of the slider block -- just as on a physical keyboard, ie 0-127 from left to right.
 
 
 /*
 <metadata description="One octave keyboard" tags="MIDI;Controller;">
     <variables>
         <variable name="octave" displayName="Octave" type="int" min="0" max="6" value="4" displayMode="stepper" />
+        <variable name="slidermode" displayName="Slider mode (PB/Mod/CC)" type="int" min="0" max="2" value="1" displayMode="stepper" />
+        <variable name="midicc" displayName="CC Value from slider" type="int" min="0" max="127" value="1" displayMode="stepper" />
+        // 0 = pitch bend
+        // 1 = mod
+        // 2 = midi cc
     </variables>
+
+
 </metadata>
 */
+
 
 // Not many variables needed
 int octaveup;
 int octavedown;
+int slider;
+int slidervalue;
+float sliderpos;
+
 
 void repaint()
 {
@@ -44,6 +58,11 @@ void repaint()
     fillRect (0xffcf0781, 13, 0, 2, 2); //Octave up
     
     
+    //The slider
+    
+    fillRect(0xfffe2c02, 4, 0, 7, 1);
+    
+    
     
     //This draws the feedback
     
@@ -57,11 +76,14 @@ void initialise()
     
     octave = 5;
     
+    if(slidermode != 0) slidervalue = 0;
+    else slidervalue = 64; // = zero pitchbend   
     
-    //Pad numbers for the octave buttons, not needed, but helps avoid mistakes
+    //Pad numbers for the octave buttons and slider, not needed, but helps to avoid mistakes
     
     octaveup = 14;
     octavedown = 13;
+    slider = 15;
 }
 
 void touchStart(int index, float x, float y, float pressure, float pressurerate)
@@ -74,6 +96,18 @@ void touchStart(int index, float x, float y, float pressure, float pressurerate)
     //find out which pad has been pressed
     pad = getpad(x,y);
     
+    if(pad == slider)
+    {
+        if (int(x*7) > 3 && int(x*7) < 11)
+        {
+            //ok, where are we?
+            slidervalue = int ((x-0.58) * 127);
+            if (slidermode == 1) sendCC(0,1,slidervalue);  
+            if (slidermode == 2) sendCC(0,midicc,slidervalue);
+            if (slidermode == 0) sendPitchBend(0,slidervalue*128);
+        }
+    }
+    
         
     if(pad>=octavedown)
     {
@@ -84,7 +118,7 @@ void touchStart(int index, float x, float y, float pressure, float pressurerate)
     }
     else
     {
-        if (pad != -1)
+        if (pad != -1 && pad != slider)
         {
     
             //send midi on
@@ -95,37 +129,71 @@ void touchStart(int index, float x, float y, float pressure, float pressurerate)
     }
 }
 
+void touchMove(int index, float x, float y, float pressure, float pressurerate)
+{
+    int pad;
+    
+    pad = getpad(x,y);
+    if (pad == slider)
+    {
+        if (int(x*7) > 3 && int(x*7) < 11)
+        {
+            //ok, where are we now?
+            slidervalue = int ((x-0.58) * 127);
+            if (slidermode == 1) sendCC(0,1,slidervalue);
+            if (slidermode == 2) sendCC(0,midicc,slidervalue);
+            if (slidermode == 0) sendPitchBend(0,slidervalue*128);  
+        }
+    }
+}
+
 void touchEnd(int index, float x, float y, float pressure, float pressurerate)
 {
     int pad, note;
     
-    //find out which pad has been released
-    pad = getpad(x,y);
-       
-    if (pad != -1)
+    
+    if (int(y*7) == 0 && slidermode == 0)
     {
-        //send midi off
-        note =(pad+(octave*12));
-        sendNoteOff(0,note,127);
+        //reset the PB, as long as it's been released, even if it's outside of the original pad
+        slidervalue = 64;
+        sendPitchBend(0,slidervalue*128);
+    }
+    else
+    {
+        //find out which pad has been released
+        pad = getpad(x,y);
+       
+        if (pad != -1 && pad < 13)
+        {
+            //send midi off, but just for the keys, not the other buttons
+            note =(pad+(octave*12));
+            sendNoteOff(0,note,127);
+        }
     }
 }
 
 int getpad(float x, float y)
 {
     //find which pad has been pressed or released
-    //return 0 - 14 (13 notes + octave switches)
+    //return 0 - 15 (13 notes + octave switches + slider)
 
     int xdot, ydot; //not really necessary, but makes it easier to map the keys
     
     xdot = int (x * 7);
     ydot = int (y * 7);
     
+    if (ydot == 0 && xdot > 3 && xdot < 11)
+    {
+        return (slider); //the slider
+    }
+    
     if (ydot < 2)
     {
         if (xdot < 2) return (octavedown);
         if (xdot > 12) return (octaveup);
     }
- 
+    
+    
     if (ydot > 1 && ydot < 5)
     {
         if (xdot > 1 && xdot < 5) return (8); //G#
